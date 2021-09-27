@@ -3,7 +3,7 @@ const express = require("express");
 const mongoose = require('mongoose');
 const {Workout} = require('../models/workout');
 const logger = require("morgan");
-// const path = require("path");
+const path = require("path");
 
 const app = express();
 
@@ -36,9 +36,17 @@ app.get("/api/workouts", (req , res) => {
     
 })
 
+app.get("/stats", (req , res) => {
+  res.sendFile(path.resolve(__dirname, '../public/stats.html'))
+})
+
+app.get("/exercise", (req , res) => {
+  res.sendFile(path.resolve(__dirname, '../public/exercise.html'))
+})
 
 
 app.get("/api/workouts/range", (req , res) => {
+  res.sendFile(path.resolve(__dirname, '../public/stats.html'))
   Workout.find({}, (error, data) => {
       if (error) {
         console.log(error);
@@ -50,6 +58,44 @@ app.get("/api/workouts/range", (req , res) => {
     });
   
 })
+
+app.post("/api/workouts", ({body}, res) => {
+  Workout.create(body)
+    .then(dbUser => {
+      res.json(dbUser);
+    })
+    .catch(err => {
+      res.json(err);
+    });
+});
+
+app.put("/api/workouts/:id", ({body}, res) => {
+  Workout.update(body)
+    .then(dbUser => {
+      res.json(dbUser);
+    })
+    .catch(err => {
+      res.json(err);
+    });
+});
+
+
+// db.places.update({"country": "Morocco"}, {$set: {"continent": "Antarctica"}}, {multi: true})
+
+
+// app.post("/api/workouts", (req, res) => {
+//   console.log(req.body);
+
+//   Workout.insert(req.body, (error, data) => {
+//     if (error) {
+//       res.send(error);
+//     } else {
+//       res.send(data);
+//     }
+//   });
+// });
+
+
 
 
 module.exports = app;
