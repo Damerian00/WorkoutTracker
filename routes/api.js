@@ -46,7 +46,6 @@ app.get("/exercise", (req , res) => {
 
 
 app.get("/api/workouts/range", (req , res) => {
-  res.sendFile(path.resolve(__dirname, '../public/stats.html'))
   Workout.find({}, (error, data) => {
       if (error) {
         console.log(error);
@@ -59,8 +58,8 @@ app.get("/api/workouts/range", (req , res) => {
   
 })
 
-app.post("/api/workouts", ({body}, res) => {
-  Workout.create(body)
+app.post("/api/workouts", (req, res) => {
+  Workout.create({})
     .then(dbUser => {
       res.json(dbUser);
     })
@@ -69,8 +68,11 @@ app.post("/api/workouts", ({body}, res) => {
     });
 });
 
-app.put("/api/workouts/:id", ({body}, res) => {
-  Workout.update(body)
+app.put("/api/workouts/:id", (req, res) => {
+  Workout.findOneAndUpdate(
+    {_id: req.params.id},
+    {$push: {exercises: req.body}}
+    )
     .then(dbUser => {
       res.json(dbUser);
     })
