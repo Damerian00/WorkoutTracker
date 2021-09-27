@@ -1,5 +1,4 @@
 const express = require("express");
-// const mongojs = require("mongojs");
 const mongoose = require('mongoose');
 const {Workout} = require('../models/workout');
 const logger = require("morgan");
@@ -24,17 +23,21 @@ mongoose.connect('mongodb://localhost/workout', {
 });
 
 app.get("/api/workouts", (req , res) => {
-    Workout.find({}, (error, data) => {
-        if (error) {
-          console.log(error);
-          res.send(error);
-        } else {
-          console.log(data);
-          res.json(data);
-        }
+    Workout.aggregate([
+      {
+      $addFields: {
+        totalDuration: {$sum: "$exercises.duration"},
+      },
+    }]).then((data)=>{
+      res.json(data);
+
+    })  .catch((err) => {
+      res.send(err);
+        
       });
+      
     
-})
+});
 
 app.get("/stats", (req , res) => {
   res.sendFile(path.resolve(__dirname, '../public/stats.html'))
@@ -46,17 +49,21 @@ app.get("/exercise", (req , res) => {
 
 
 app.get("/api/workouts/range", (req , res) => {
-  Workout.find({}, (error, data) => {
-      if (error) {
-        console.log(error);
-        res.send(error);
-      } else {
-        console.log(data);
-        res.json(data);
-      }
+  Workout.aggregate([
+    {
+    $addFields: {
+      totalDuration: {$sum: "$exercises.duration"},
+    },
+  },
+  ]).limit(7).then((data) => {
+    res.json(data);
+  }) 
+  .catch((err) => {
+    res.send(err);
+      
     });
   
-})
+});
 
 app.post("/api/workouts", (req, res) => {
   Workout.create({})
@@ -69,9 +76,11 @@ app.post("/api/workouts", (req, res) => {
 });
 
 app.put("/api/workouts/:id", (req, res) => {
-  Workout.findOneAndUpdate(
+  Workout.findbyIdAndUpdate(
     {_id: req.params.id},
-    {$push: {exercises: req.body}}
+    {$push: {exercises: req.body},},
+    {new: true,
+    runValidators: true,}
     )
     .then(dbUser => {
       res.json(dbUser);
