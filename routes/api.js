@@ -55,7 +55,8 @@ app.get("/api/workouts/range", (req , res) => {
       totalDuration: {$sum: "$exercises.duration"},
     },
   },
-  ]).limit(7).then((data) => {
+  ]).sort({_id: -1}).limit(7).then((data) => {
+    data.sort((a, b) => (a._id > b._id) ? 1 : -1)
     res.json(data);
   }) 
   .catch((err) => {
@@ -76,7 +77,7 @@ app.post("/api/workouts", (req, res) => {
 });
 
 app.put("/api/workouts/:id", (req, res) => {
-  Workout.findbyIdAndUpdate(
+  Workout.findByIdAndUpdate(
     {_id: req.params.id},
     {$push: {exercises: req.body},},
     {new: true,
