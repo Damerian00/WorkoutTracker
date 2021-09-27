@@ -1,35 +1,55 @@
-const router = require("express").Router();
-const Transaction = require("../models/transaction.js");
+const express = require("express");
+// const mongojs = require("mongojs");
+const mongoose = require('mongoose');
+const {Workout} = require('../models/workout');
+const logger = require("morgan");
+// const path = require("path");
 
-router.post("/api/transaction", ({ body }, res) => {
-  Transaction.create(body)
-    .then(dbTransaction => {
-      res.json(dbTransaction);
-    })
-    .catch(err => {
-      res.status(400).json(err);
-    });
+const app = express();
+
+app.use(logger("dev"));
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+app.use(express.static("public"));
+// const databaseUrl = "workout";
+// const collections = ["workout"];
+
+// const db = mongojs(databaseUrl, collections);
+mongoose.connect('mongodb://localhost/workout', {
+  useNewUrlParser: true,
+  useFindAndModify: false,
+  useUnifiedTopology: true,
 });
 
-router.post("/api/transaction/bulk", ({ body }, res) => {
-  Transaction.insertMany(body)
-    .then(dbTransaction => {
-      res.json(dbTransaction);
-    })
-    .catch(err => {
-      res.status(400).json(err);
-    });
-});
+app.get("/api/workouts", (req , res) => {
+    Workout.find({}, (error, data) => {
+        if (error) {
+          console.log(error);
+          res.send(error);
+        } else {
+          console.log(data);
+          res.json(data);
+        }
+      });
+    
+})
 
-router.get("/api/transaction", (req, res) => {
-  Transaction.find({})
-    .sort({ date: -1 })
-    .then(dbTransaction => {
-      res.json(dbTransaction);
-    })
-    .catch(err => {
-      res.status(400).json(err);
-    });
-});
 
-module.exports = router;
+
+app.get("/api/workouts/range", (req , res) => {
+  Workout.find({}, (error, data) => {
+      if (error) {
+        console.log(error);
+        res.send(error);
+      } else {
+        console.log(data);
+        res.json(data);
+      }
+    });
+  
+})
+
+
+module.exports = app;
